@@ -71,7 +71,7 @@ func Mount(app *fiber.App, docs *service.Docs) error {
 	// it resolves under MountPath automatically, no matter where the
 	// docs are mounted.
 	htmlHandler := func(c *fiber.Ctx) error {
-		body, err := docs.RenderHTML(specFilename)
+		body, err := docs.RenderHTML(cfg.MountPath + "/" + specFilename)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).
 				SendString("mtnuu: failed to render docs: " + err.Error())
