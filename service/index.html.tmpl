@@ -1,0 +1,1743 @@
+<html>
+
+<head>
+  {{if .LogoURL}}<link rel="icon" href="{{.LogoURL}}" />{{end}}
+  <title>{{.Title}}</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --scalar-custom-header-height: 60px;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      background-color: var(--scalar-background-1);
+    }
+
+    .custom-header {
+      height: var(--scalar-custom-header-height);
+      background-color: var(--scalar-background-1);
+      box-shadow: inset 0 -1px 0 var(--scalar-border-color);
+      color: var(--scalar-color-1);
+      font-size: var(--scalar-font-size-2);
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-weight: 800;
+      font-size: 22px;
+      color: var(--scalar-color-1);
+      letter-spacing: 1px;
+    }
+
+    .made-by {
+      font-size: 16px;
+      font-weight: 600;
+      background: linear-gradient(90deg, #00c6ff, #0072ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-family: "Poppins", sans-serif;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      cursor: pointer;
+    }
+
+    .made-by:hover {
+      transform: scale(1.08);
+      opacity: 0.9;
+    }
+
+    /* Hide all possible loading states */
+    .scalar-card-loading,
+    .loading-skeleton,
+    [class*="loading"],
+    [class*="skeleton"],
+    [data-loading="true"] {
+      display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+    }
+
+    .fz-bar {
+      background-color: var(--scalar-background-1, #0f1117);
+      border-bottom: 1px solid var(--scalar-border-color, #1e2130);
+      color: var(--scalar-color-1, #c5c8d4);
+      padding: 6px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      font-family: "Poppins", sans-serif;
+      font-size: 12px;
+      position: sticky;
+      top: var(--scalar-custom-header-height);
+      z-index: 99;
+    }
+
+    .fz-bar .fz-sep {
+      width: 1px;
+      height: 18px;
+      background: var(--scalar-border-color, #1e2130);
+    }
+
+    .fz-bar label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--scalar-color-2, #8b8fa3);
+      white-space: nowrap;
+    }
+
+    .fz-bar input[type="checkbox"] {
+      accent-color: #0072ff;
+    }
+
+    .fz-bar .fz-spacer {
+      flex: 1;
+    }
+
+    .fz-btn {
+      padding: 3px 10px;
+      border-radius: 4px;
+      border: 1px solid var(--scalar-border-color, #2a2e42);
+      background: transparent;
+      color: var(--scalar-color-1, #c5c8d4);
+      font-size: 11px;
+      font-weight: 600;
+      font-family: "Poppins", sans-serif;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .fz-btn:hover {
+      background: var(--scalar-background-2, #181b27);
+    }
+
+    .fz-btn.active {
+      background: #0072ff;
+      color: #fff;
+      border-color: #0072ff;
+    }
+
+    .fz-btn.danger {
+      color: #f87171;
+      border-color: #3a1c1c;
+    }
+
+    .fz-btn.danger:hover {
+      background: #2a1515;
+    }
+
+    .fz-btn.accent {
+      background: #0072ff;
+      color: #fff;
+      border-color: #0072ff;
+    }
+
+    .fz-btn.accent:hover {
+      background: #005ed9;
+    }
+
+    .fz-btn.warn {
+      color: #fbbf24;
+      border-color: #3a3418;
+    }
+
+    .fz-btn.warn:hover {
+      background: #2a2510;
+    }
+
+    .fz-badge {
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      background: var(--scalar-background-2, #181b27);
+      border: 1px solid var(--scalar-border-color, #2a2e42);
+      border-radius: 10px;
+      padding: 1px 8px;
+      color: #0072ff;
+    }
+
+    .fz-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .fz-dot.on {
+      background: #34d399;
+    }
+
+    .fz-dot.off {
+      background: #555;
+    }
+
+    .fz-status {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-family: 'Courier New', monospace;
+      color: #666;
+    }
+
+    /* ─── History Panel ─── */
+    .fz-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 20000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .fz-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .fz-panel {
+      position: fixed;
+      top: 0;
+      right: -560px;
+      width: 560px;
+      max-width: 92vw;
+      height: 100vh;
+      background: var(--scalar-background-1, #13151f);
+      z-index: 20001;
+      transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid var(--scalar-border-color, #1e2130);
+      font-family: "Poppins", sans-serif;
+    }
+
+    .fz-panel.open {
+      right: 0;
+    }
+
+    .fz-panel-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--scalar-border-color, #1e2130);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .fz-panel-header h2 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--scalar-color-1, #e2e4ed);
+      margin: 0;
+    }
+
+    .fz-panel-header .fz-panel-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* Tab switcher */
+    .fz-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--scalar-border-color, #1e2130);
+    }
+
+    .fz-tab {
+      flex: 1;
+      padding: 8px 0;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: #666;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      font-family: "Poppins", sans-serif;
+    }
+
+    .fz-tab:hover {
+      color: var(--scalar-color-1, #c5c8d4);
+    }
+
+    .fz-tab.active {
+      color: #0072ff;
+      border-bottom-color: #0072ff;
+    }
+
+    .fz-select-bar {
+      padding: 6px 20px;
+      border-bottom: 1px solid var(--scalar-border-color, #1e2130);
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 114, 255, 0.04);
+    }
+
+    .fz-select-bar.visible {
+      display: flex;
+    }
+
+    .fz-select-bar .fz-sel-count {
+      font-size: 11px;
+      font-family: 'Courier New', monospace;
+      color: #0072ff;
+      flex: 1;
+    }
+
+    .fz-filters {
+      padding: 8px 20px;
+      border-bottom: 1px solid var(--scalar-border-color, #1e2130);
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .fz-chip {
+      padding: 2px 9px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600;
+      font-family: 'Courier New', monospace;
+      cursor: pointer;
+      border: 1px solid var(--scalar-border-color, #2a2e42);
+      background: transparent;
+      color: var(--scalar-color-1, #c5c8d4);
+      transition: all 0.15s;
+    }
+
+    .fz-chip:hover {
+      background: var(--scalar-background-2, #181b27);
+    }
+
+    .fz-chip.active {
+      border-color: #0072ff;
+      color: #0072ff;
+      background: rgba(0, 114, 255, 0.08);
+    }
+
+    .fz-search {
+      padding: 8px 20px;
+      border-bottom: 1px solid var(--scalar-border-color, #1e2130);
+    }
+
+    .fz-search input {
+      width: 100%;
+      padding: 6px 10px;
+      border-radius: 5px;
+      border: 1px solid var(--scalar-border-color, #2a2e42);
+      background: var(--scalar-background-2, #181b27);
+      color: var(--scalar-color-1, #c5c8d4);
+      font-size: 11px;
+      font-family: 'Courier New', monospace;
+      outline: none;
+    }
+
+    .fz-search input:focus {
+      border-color: #0072ff;
+    }
+
+    .fz-search input::placeholder {
+      color: #4a4e63;
+    }
+
+    .fz-list {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #2a2e42 transparent;
+    }
+
+    .fz-item {
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--scalar-border-color, #1e2130);
+      cursor: pointer;
+      transition: background 0.1s;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .fz-item:hover {
+      background: var(--scalar-background-2, #1a1d2e);
+    }
+
+    .fz-item.selected {
+      background: rgba(0, 114, 255, 0.06);
+    }
+
+    .fz-item .fz-item-check {
+      margin-top: 2px;
+      accent-color: #0072ff;
+      display: none;
+      flex-shrink: 0;
+    }
+
+    .fz-item.select-mode .fz-item-check {
+      display: block;
+    }
+
+    .fz-item .fz-item-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .fz-item .fz-row-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 3px;
+    }
+
+    .fz-method {
+      font-family: 'Courier New', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      flex-shrink: 0;
+    }
+
+    .fz-method.get {
+      background: rgba(52, 211, 153, 0.12);
+      color: #34d399;
+    }
+
+    .fz-method.post {
+      background: rgba(0, 114, 255, 0.12);
+      color: #0072ff;
+    }
+
+    .fz-method.put {
+      background: rgba(251, 191, 36, 0.12);
+      color: #fbbf24;
+    }
+
+    .fz-method.delete {
+      background: rgba(248, 113, 113, 0.12);
+      color: #f87171;
+    }
+
+    .fz-method.patch {
+      background: rgba(192, 132, 252, 0.12);
+      color: #c084fc;
+    }
+
+    .fz-item .fz-path {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--scalar-color-1, #c5c8d4);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .fz-status-code {
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .fz-status-code.s2xx {
+      color: #34d399;
+    }
+
+    .fz-status-code.s3xx {
+      color: #fbbf24;
+    }
+
+    .fz-status-code.s4xx {
+      color: #f87171;
+    }
+
+    .fz-status-code.s5xx {
+      color: #f87171;
+    }
+
+    .fz-status-code.sunk {
+      color: #666;
+    }
+
+    .fz-item .fz-row-bottom {
+      display: flex;
+      gap: 10px;
+      font-size: 10px;
+      color: #4a4e63;
+      font-family: 'Courier New', monospace;
+      align-items: center;
+    }
+
+    .fz-item .fz-row-bottom .fz-bookmark-icon {
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.15s;
+      opacity: 0.4;
+    }
+
+    .fz-item:hover .fz-bookmark-icon {
+      opacity: 0.7;
+    }
+
+    .fz-item .fz-row-bottom .fz-bookmark-icon.saved {
+      opacity: 1;
+      color: #fbbf24;
+    }
+
+    .fz-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #3a3e52;
+      font-size: 12px;
+      gap: 6px;
+    }
+
+    .fz-empty .fz-empty-icon {
+      font-size: 28px;
+      opacity: 0.3;
+    }
+
+    .fz-detail {
+      flex: 1;
+      overflow-y: auto;
+      display: none;
+      flex-direction: column;
+    }
+
+    .fz-detail.visible {
+      display: flex;
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+    }
+
+    .fz-detail-back {
+      padding: 8px 20px;
+      border-bottom: 1px solid var(--scalar-border-color, #1e2130);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .fz-detail-section {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--scalar-border-color, #1e2130);
+    }
+
+    .fz-detail-section h3 {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #555;
+      margin: 0 0 6px 0;
+    }
+
+    .fz-detail-section pre {
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      line-height: 1.5;
+      color: #b0b4c8;
+      background: var(--scalar-background-2, #181b27);
+      border: 1px solid var(--scalar-border-color, #2a2e42);
+      border-radius: 5px;
+      padding: 10px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 280px;
+      overflow-y: auto;
+      margin: 0;
+    }
+
+    /* ─── Examples tab ─── */
+    .fz-examples-content {
+      flex: 1;
+      overflow-y: auto;
+      display: none;
+      flex-direction: column;
+    }
+
+    .fz-examples-content.visible {
+      display: flex;
+    }
+
+    .fz-example-group {
+      border-bottom: 1px solid var(--scalar-border-color, #1e2130);
+    }
+
+    .fz-example-group-header {
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .fz-example-group-header:hover {
+      background: var(--scalar-background-2, #1a1d2e);
+    }
+
+    .fz-example-group-header .fz-eg-arrow {
+      font-size: 10px;
+      color: #555;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+
+    .fz-example-group-header .fz-eg-arrow.open {
+      transform: rotate(90deg);
+    }
+
+    .fz-example-group-header .fz-eg-path {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--scalar-color-1, #c5c8d4);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .fz-example-group-header .fz-eg-count {
+      font-size: 10px;
+      font-family: 'Courier New', monospace;
+      color: #555;
+    }
+
+    .fz-example-group-items {
+      display: none;
+      padding-left: 16px;
+    }
+
+    .fz-example-group-items.open {
+      display: block;
+    }
+
+    .fz-example-item {
+      padding: 8px 20px;
+      border-top: 1px solid var(--scalar-border-color, #0e1018);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .fz-example-item:hover {
+      background: var(--scalar-background-2, #1a1d2e);
+    }
+
+    .fz-example-item .fz-ex-name {
+      font-size: 11px;
+      color: var(--scalar-color-1, #c5c8d4);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .fz-example-item .fz-ex-time {
+      font-size: 9px;
+      font-family: 'Courier New', monospace;
+      color: #4a4e63;
+    }
+
+    .fz-example-item .fz-ex-del {
+      font-size: 11px;
+      color: #f87171;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.15s;
+      background: none;
+      border: none;
+      padding: 0 4px;
+    }
+
+    .fz-example-item:hover .fz-ex-del {
+      opacity: 0.7;
+    }
+
+    .fz-example-item .fz-ex-del:hover {
+      opacity: 1;
+    }
+
+    /* Save example modal */
+    .fz-modal-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 30000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .fz-modal-bg.open {
+      display: flex;
+    }
+
+    .fz-modal {
+      background: var(--scalar-background-1, #13151f);
+      border: 1px solid var(--scalar-border-color, #1e2130);
+      border-radius: 8px;
+      padding: 20px;
+      width: 380px;
+      max-width: 90vw;
+      font-family: "Poppins", sans-serif;
+    }
+
+    .fz-modal h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--scalar-color-1, #e2e4ed);
+      margin: 0 0 12px 0;
+    }
+
+    .fz-modal label {
+      display: block;
+      font-size: 11px;
+      color: #8b8fa3;
+      margin-bottom: 4px;
+    }
+
+    .fz-modal input[type="text"] {
+      width: 100%;
+      padding: 7px 10px;
+      border-radius: 5px;
+      border: 1px solid var(--scalar-border-color, #2a2e42);
+      background: var(--scalar-background-2, #181b27);
+      color: var(--scalar-color-1, #c5c8d4);
+      font-size: 12px;
+      font-family: 'Courier New', monospace;
+      outline: none;
+      margin-bottom: 12px;
+      box-sizing: border-box;
+    }
+
+    .fz-modal input[type="text"]:focus {
+      border-color: #0072ff;
+    }
+
+    .fz-modal .fz-modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="custom-header scalar-app">
+    <div class="logo"><b>{{.DocName}}</b></div>
+    {{if .LogoURL}}<img src="{{.LogoURL}}" alt="{{.DocName}} Logo" height="40" />{{end}}
+    {{if .MadeBy}}<div class="made-by">{{.MadeBy}}</div>{{end}}
+  </header>
+
+  <div class="fz-bar">
+    <label>
+      <input type="checkbox" id="fz-persist-auth" />
+      Persist Auth
+    </label>
+    <div class="fz-sep"></div>
+    <div class="fz-status">
+      <span class="fz-dot" id="fz-dot"></span>
+      <span id="fz-status-text"></span>
+    </div>
+    <div class="fz-spacer"></div>
+    <span class="fz-badge" id="fz-count">0 requests</span>
+    <button class="fz-btn" id="fz-history-btn" onclick="fzToggleHistory()">History ▸</button>
+    <button class="fz-btn danger" onclick="fzClearAll()">Reset</button>
+  </div>
+
+  <div class="fz-overlay" id="fz-overlay" onclick="fzToggleHistory()"></div>
+  <div class="fz-panel" id="fz-panel">
+    <div class="fz-panel-header">
+      <h2>Request History</h2>
+      <div class="fz-panel-actions">
+        <button class="fz-btn" onclick="fzExportHistory()">Export</button>
+        <button class="fz-btn danger" onclick="fzClearHistory()">Clear All</button>
+        <button class="fz-btn" onclick="fzToggleHistory()">✕</button>
+      </div>
+    </div>
+
+    <div class="fz-tabs">
+      <button class="fz-tab active" id="fz-tab-history" onclick="fzSwitchTab('history')">History</button>
+      <button class="fz-tab" id="fz-tab-examples" onclick="fzSwitchTab('examples')">Saved Examples</button>
+    </div>
+
+    <div id="fz-history-tab">
+      <div class="fz-select-bar" id="fz-select-bar">
+        <input type="checkbox" id="fz-select-all" onclick="fzToggleSelectAll()" style="accent-color:#0072ff" />
+        <span class="fz-sel-count" id="fz-sel-count">0 selected</span>
+        <button class="fz-btn warn" onclick="fzSaveSelectedAsExamples()">★ Save as Examples</button>
+        <button class="fz-btn danger" onclick="fzDeleteSelected()">Delete</button>
+        <button class="fz-btn" onclick="fzExitSelectMode()">Cancel</button>
+      </div>
+
+      <div class="fz-filters" id="fz-filters">
+        <button class="fz-chip active" onclick="fzSetFilter('all', this)">All</button>
+        <button class="fz-chip" onclick="fzSetFilter('GET', this)">GET</button>
+        <button class="fz-chip" onclick="fzSetFilter('POST', this)">POST</button>
+        <button class="fz-chip" onclick="fzSetFilter('PUT', this)">PUT</button>
+        <button class="fz-chip" onclick="fzSetFilter('DELETE', this)">DEL</button>
+        <button class="fz-chip" onclick="fzSetFilter('PATCH', this)">PATCH</button>
+        <div style="flex:1"></div>
+        <button class="fz-btn" id="fz-select-mode-btn" onclick="fzEnterSelectMode()"
+          style="font-size:10px">Select</button>
+      </div>
+
+      <div class="fz-search">
+        <input type="text" id="fz-search-input" placeholder="Search by path… e.g. /users" oninput="fzRenderList()" />
+      </div>
+
+      <div class="fz-list" id="fz-list">
+        <div class="fz-empty">
+          <span class="fz-empty-icon">◇</span>
+          <span>No requests yet</span>
+          <span style="font-size:10px">Send a request via Scalar to see it here</span>
+        </div>
+      </div>
+
+      <div class="fz-detail" id="fz-detail">
+        <div class="fz-detail-back">
+          <button class="fz-btn" onclick="fzHideDetail()">← Back</button>
+          <div style="flex:1"></div>
+          <button class="fz-btn warn" id="fz-detail-save-btn" onclick="fzSaveCurrentAsExample()">★ Save as
+            Example</button>
+        </div>
+        <div id="fz-detail-content" style="overflow-y:auto; flex:1;"></div>
+      </div>
+    </div>
+
+    <div class="fz-examples-content" id="fz-examples-tab">
+      <div class="fz-search" style="border-bottom:1px solid var(--scalar-border-color,#1e2130)">
+        <input type="text" id="fz-ex-search" placeholder="Search examples…" oninput="fzRenderExamples()" />
+      </div>
+      <div class="fz-list" id="fz-examples-list">
+        <div class="fz-empty">
+          <span class="fz-empty-icon">★</span>
+          <span>No saved examples</span>
+          <span style="font-size:10px">Bookmark requests from History to save them here</span>
+        </div>
+      </div>
+      <div class="fz-detail" id="fz-ex-detail">
+        <div class="fz-detail-back">
+          <button class="fz-btn" onclick="fzHideExDetail()">← Back</button>
+        </div>
+        <div id="fz-ex-detail-content" style="overflow-y:auto; flex:1;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fz-modal-bg" id="fz-modal-bg">
+    <div class="fz-modal">
+      <h3>Save as Example</h3>
+      <label>Example Name</label>
+      <input type="text" id="fz-modal-name" placeholder="e.g. Create user - success" />
+      <div class="fz-modal-actions">
+        <button class="fz-btn" onclick="fzCloseModal()">Cancel</button>
+        <button class="fz-btn accent" onclick="fzConfirmSaveExample()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="api-reference"></div>
+
+  <script>
+    // Injected from mtnuu config so the XHR/fetch interceptor below
+    // knows which hosts count as "your API" and should be logged.
+    window.__MTNUU_SERVER_HOSTS__ = {{.ServerJSON}};
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+  <script>
+    var FZ_DB = '{{.JSName}}HistoryDB';
+    var FZ_VER = 2; // bumped for new examples store
+    var FZ_REQ = 'requests';
+    var FZ_EX = 'examples';
+
+    function fzOpenDB() {
+      return new Promise(function (resolve, reject) {
+        var req = indexedDB.open(FZ_DB, FZ_VER);
+        req.onupgradeneeded = function (e) {
+          var db = e.target.result;
+          if (!db.objectStoreNames.contains(FZ_REQ)) {
+            var s = db.createObjectStore(FZ_REQ, { keyPath: 'id', autoIncrement: true });
+            s.createIndex('method', 'method', { unique: false });
+            s.createIndex('path', 'path', { unique: false });
+            s.createIndex('timestamp', 'timestamp', { unique: false });
+          }
+          if (!db.objectStoreNames.contains(FZ_EX)) {
+            var ex = db.createObjectStore(FZ_EX, { keyPath: 'id', autoIncrement: true });
+            ex.createIndex('groupKey', 'groupKey', { unique: false });
+            ex.createIndex('timestamp', 'timestamp', { unique: false });
+          }
+        };
+        req.onsuccess = function () { resolve(req.result); };
+        req.onerror = function () { reject(req.error); };
+      });
+    }
+
+    async function fzSaveRequest(entry) {
+      var db = await fzOpenDB();
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(FZ_REQ, 'readwrite');
+        tx.objectStore(FZ_REQ).add(entry);
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { reject(tx.error); };
+      });
+    }
+
+    async function fzGetAll() {
+      var db = await fzOpenDB();
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(FZ_REQ, 'readonly');
+        var req = tx.objectStore(FZ_REQ).getAll();
+        req.onsuccess = function () { resolve(req.result); };
+        req.onerror = function () { reject(req.error); };
+      });
+    }
+
+    async function fzGetById(id) {
+      var db = await fzOpenDB();
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(FZ_REQ, 'readonly');
+        var req = tx.objectStore(FZ_REQ).get(id);
+        req.onsuccess = function () { resolve(req.result); };
+        req.onerror = function () { reject(req.error); };
+      });
+    }
+
+    async function fzDeleteByIds(ids) {
+      var db = await fzOpenDB();
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(FZ_REQ, 'readwrite');
+        var store = tx.objectStore(FZ_REQ);
+        ids.forEach(function (id) { store.delete(id); });
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { reject(tx.error); };
+      });
+    }
+
+    async function fzClearDB() {
+      var db = await fzOpenDB();
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(FZ_REQ, 'readwrite');
+        tx.objectStore(FZ_REQ).clear();
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { reject(tx.error); };
+      });
+    }
+
+    async function fzGetCount() {
+      var db = await fzOpenDB();
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(FZ_REQ, 'readonly');
+        var req = tx.objectStore(FZ_REQ).count();
+        req.onsuccess = function () { resolve(req.result); };
+        req.onerror = function () { reject(req.error); };
+      });
+    }
+
+    async function fzSaveExample(entry) {
+      var db = await fzOpenDB();
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(FZ_EX, 'readwrite');
+        tx.objectStore(FZ_EX).add(entry);
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { reject(tx.error); };
+      });
+    }
+
+    async function fzGetAllExamples() {
+      var db = await fzOpenDB();
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(FZ_EX, 'readonly');
+        var req = tx.objectStore(FZ_EX).getAll();
+        req.onsuccess = function () { resolve(req.result); };
+        req.onerror = function () { reject(req.error); };
+      });
+    }
+
+    async function fzGetExampleById(id) {
+      var db = await fzOpenDB();
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(FZ_EX, 'readonly');
+        var req = tx.objectStore(FZ_EX).get(id);
+        req.onsuccess = function () { resolve(req.result); };
+        req.onerror = function () { reject(req.error); };
+      });
+    }
+
+    async function fzDeleteExample(id) {
+      var db = await fzOpenDB();
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(FZ_EX, 'readwrite');
+        tx.objectStore(FZ_EX).delete(id);
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { reject(tx.error); };
+      });
+    }
+
+    async function fzClearExamples() {
+      var db = await fzOpenDB();
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(FZ_EX, 'readwrite');
+        tx.objectStore(FZ_EX).clear();
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { reject(tx.error); };
+      });
+    }
+
+    var FZ_STATE_KEY = '{{.JSName}}_state';
+
+    function fzLoadState() {
+      try { return JSON.parse(localStorage.getItem(FZ_STATE_KEY)) || {}; }
+      catch (e) { return {}; }
+    }
+
+    function fzSaveState(partial) {
+      var updated = Object.assign({}, fzLoadState(), partial);
+      localStorage.setItem(FZ_STATE_KEY, JSON.stringify(updated));
+      return updated;
+    }
+
+    function fzClearAll() {
+      if (!confirm('Reset all saved state, history, and examples?')) return;
+      localStorage.removeItem(FZ_STATE_KEY);
+      Object.keys(localStorage).forEach(function (k) {
+        if (k.startsWith('scalar')) localStorage.removeItem(k);
+      });
+      Promise.all([fzClearDB(), fzClearExamples()]).then(function () {
+        location.href = location.pathname;
+      });
+    }
+
+    var fzState = fzLoadState();
+
+    var fzPersistCheck = document.getElementById('fz-persist-auth');
+    fzPersistCheck.checked = fzState.persistAuth === true;
+    fzPersistCheck.addEventListener('change', function () {
+      fzSaveState({ persistAuth: fzPersistCheck.checked });
+      location.reload();
+    });
+
+    var fzHasSaved = localStorage.getItem(FZ_STATE_KEY) !== null;
+    document.getElementById('fz-dot').className = 'fz-dot ' + (fzHasSaved ? 'on' : 'off');
+    document.getElementById('fz-status-text').textContent = fzHasSaved ? 'state saved' : 'default';
+
+    window.addEventListener('hashchange', function () { fzSaveState({ lastHash: location.hash }); });
+    if (fzState.lastHash && !location.hash) location.hash = fzState.lastHash;
+
+    async function fzRefreshCount() {
+      var c = await fzGetCount();
+      document.getElementById('fz-count').textContent = c + ' request' + (c !== 1 ? 's' : '');
+    }
+    fzRefreshCount();
+
+    var fzCurrentTab = 'history';
+
+    function fzSwitchTab(tab) {
+      fzCurrentTab = tab;
+      document.getElementById('fz-tab-history').classList.toggle('active', tab === 'history');
+      document.getElementById('fz-tab-examples').classList.toggle('active', tab === 'examples');
+      document.getElementById('fz-history-tab').style.display = tab === 'history' ? '' : 'none';
+      document.getElementById('fz-examples-tab').classList.toggle('visible', tab === 'examples');
+      if (tab === 'history') { fzHideDetail(); fzRenderList(); }
+      if (tab === 'examples') { fzHideExDetail(); fzRenderExamples(); }
+    }
+
+    var fzHistoryOpen = false;
+    var fzActiveFilter = 'all';
+    var fzSelectMode = false;
+    var fzSelectedIds = new Set();
+
+    function fzToggleHistory() {
+      fzHistoryOpen = !fzHistoryOpen;
+      document.getElementById('fz-panel').classList.toggle('open', fzHistoryOpen);
+      document.getElementById('fz-overlay').classList.toggle('open', fzHistoryOpen);
+      document.getElementById('fz-history-btn').classList.toggle('active', fzHistoryOpen);
+
+      document.body.style.overflow = fzHistoryOpen ? 'hidden' : '';
+
+      if (fzHistoryOpen) {
+        fzExitSelectMode();
+        fzHideDetail();
+        fzSwitchTab('history');
+      }
+    }
+
+    function fzEnterSelectMode() {
+      fzSelectMode = true;
+      fzSelectedIds.clear();
+      document.getElementById('fz-select-bar').classList.add('visible');
+      document.getElementById('fz-select-mode-btn').style.display = 'none';
+      fzUpdateSelCount();
+      fzRenderList();
+    }
+
+    function fzExitSelectMode() {
+      fzSelectMode = false;
+      fzSelectedIds.clear();
+      document.getElementById('fz-select-bar').classList.remove('visible');
+      document.getElementById('fz-select-mode-btn').style.display = '';
+      document.getElementById('fz-select-all').checked = false;
+      fzRenderList();
+    }
+
+    function fzToggleSelectItem(id, checkbox) {
+      if (checkbox.checked) fzSelectedIds.add(id);
+      else fzSelectedIds.delete(id);
+      fzUpdateSelCount();
+    }
+
+    function fzToggleSelectAll() {
+      var checked = document.getElementById('fz-select-all').checked;
+      var boxes = document.querySelectorAll('.fz-item-check');
+      boxes.forEach(function (cb) {
+        cb.checked = checked;
+        var id = parseInt(cb.dataset.id);
+        if (checked) fzSelectedIds.add(id);
+        else fzSelectedIds.delete(id);
+      });
+      fzUpdateSelCount();
+    }
+
+    function fzUpdateSelCount() {
+      document.getElementById('fz-sel-count').textContent = fzSelectedIds.size + ' selected';
+    }
+
+    async function fzDeleteSelected() {
+      if (fzSelectedIds.size === 0) return;
+      if (!confirm('Delete ' + fzSelectedIds.size + ' request(s)?')) return;
+      await fzDeleteByIds(Array.from(fzSelectedIds));
+      fzSelectedIds.clear();
+      fzUpdateSelCount();
+      await fzRefreshCount();
+      fzRenderList();
+    }
+
+    function fzSetFilter(method, el) {
+      fzActiveFilter = method;
+      document.querySelectorAll('.fz-chip').forEach(function (c) { c.classList.remove('active'); });
+      el.classList.add('active');
+      fzRenderList();
+    }
+
+    function fzStatusClass(code) {
+      if (!code) return 'sunk';
+      if (code < 300) return 's2xx';
+      if (code < 400) return 's3xx';
+      if (code < 500) return 's4xx';
+      return 's5xx';
+    }
+
+    function fzTimeAgo(ts) {
+      var diff = Date.now() - ts;
+      if (diff < 60000) return 'just now';
+      if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+      if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+      return new Date(ts).toLocaleDateString();
+    }
+
+    function fzEsc(s) {
+      if (!s) return '';
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function fzTruncate(body, max) {
+      max = max || 5000;
+      if (!body) return '(empty)';
+      if (typeof body === 'object') body = JSON.stringify(body, null, 2);
+      if (body.length > max) return body.slice(0, max) + '\n\n… (truncated)';
+      return body;
+    }
+
+    function fzPrettyJSON(str) {
+      if (!str || str === '(empty)') return str;
+      try { return JSON.stringify(JSON.parse(str), null, 2); }
+      catch (e) { return str; }
+    }
+
+    async function fzRenderList() {
+      var list = document.getElementById('fz-list');
+      var search = document.getElementById('fz-search-input').value.toLowerCase();
+      var items = await fzGetAll();
+
+      items.sort(function (a, b) { return b.timestamp - a.timestamp; });
+      if (fzActiveFilter !== 'all') items = items.filter(function (i) { return i.method === fzActiveFilter; });
+      if (search) items = items.filter(function (i) {
+        return (i.path || '').toLowerCase().indexOf(search) !== -1 ||
+          (i.url || '').toLowerCase().indexOf(search) !== -1;
+      });
+
+      if (items.length === 0) {
+        list.innerHTML = '<div class="fz-empty"><span class="fz-empty-icon">◇</span><span>No matching requests</span></div>';
+        return;
+      }
+
+      list.innerHTML = items.map(function (item) {
+        var selClass = fzSelectMode ? ' select-mode' : '';
+        var checkedAttr = fzSelectedIds.has(item.id) ? ' checked' : '';
+        var clickAction = fzSelectMode
+          ? ''
+          : ' onclick="fzShowDetail(' + item.id + ')"';
+
+        return '<div class="fz-item' + selClass + '"' + clickAction + '>' +
+          '<input type="checkbox" class="fz-item-check" data-id="' + item.id + '"' + checkedAttr +
+          ' onclick="event.stopPropagation(); fzToggleSelectItem(' + item.id + ', this)" />' +
+          '<div class="fz-item-content">' +
+          '<div class="fz-row-top">' +
+          '<span class="fz-method ' + (item.method || 'get').toLowerCase() + '">' + (item.method || '?') + '</span>' +
+          '<span class="fz-path">' + fzEsc(item.path || item.url || '?') + '</span>' +
+          '<span class="fz-status-code ' + fzStatusClass(item.statusCode) + '">' + (item.statusCode || '—') + '</span>' +
+          '</div>' +
+          '<div class="fz-row-bottom">' +
+          '<span>' + fzTimeAgo(item.timestamp) + '</span>' +
+          (item.duration ? '<span>' + item.duration + 'ms</span>' : '') +
+          '<span class="fz-bookmark-icon" onclick="event.stopPropagation(); fzQuickSaveExample(' + item.id + ')" title="Save as example">★</span>' +
+          '</div>' +
+          '</div>' +
+          '</div>';
+      }).join('');
+    }
+
+    var fzCurrentDetailId = null;
+
+    async function fzShowDetail(id) {
+      fzCurrentDetailId = id;
+      var item = await fzGetById(id);
+      if (!item) return;
+
+      document.getElementById('fz-list').style.display = 'none';
+      document.getElementById('fz-filters').style.display = 'none';
+      document.querySelector('#fz-history-tab .fz-search').style.display = 'none';
+      document.getElementById('fz-select-bar').classList.remove('visible');
+
+      var dv = document.getElementById('fz-detail');
+      dv.classList.add('visible');
+
+      var rqH = item.requestHeaders ? fzPrettyJSON(JSON.stringify(item.requestHeaders)) : '(none)';
+      var rsH = item.responseHeaders ? fzPrettyJSON(JSON.stringify(item.responseHeaders)) : '(none)';
+      var rqB = fzPrettyJSON(fzTruncate(item.requestBody));
+      var rsB = fzPrettyJSON(fzTruncate(item.responseBody));
+
+      document.getElementById('fz-detail-content').innerHTML =
+        '<div class="fz-detail-section">' +
+        '<h3>Request</h3>' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">' +
+        '<span class="fz-method ' + (item.method || 'get').toLowerCase() + '">' + (item.method || '?') + '</span>' +
+        '<span style="font-family:Courier New,monospace;font-size:11px;color:var(--scalar-color-1,#c5c8d4);word-break:break-all;">' + fzEsc(item.url || item.path || '?') + '</span>' +
+        '</div>' +
+        '<div style="display:flex;gap:12px;font-size:10px;font-family:Courier New,monospace;">' +
+        '<span class="fz-status-code ' + fzStatusClass(item.statusCode) + '">Status: ' + (item.statusCode || '—') + '</span>' +
+        (item.duration ? '<span style="color:#6b6f85">Duration: ' + item.duration + 'ms</span>' : '') +
+        '<span style="color:#4a4e63">' + new Date(item.timestamp).toLocaleString() + '</span>' +
+        '</div>' +
+        '</div>' +
+        '<div class="fz-detail-section"><h3>Request Headers</h3><pre>' + fzEsc(rqH) + '</pre></div>' +
+        '<div class="fz-detail-section"><h3>Request Body</h3><pre>' + fzEsc(rqB) + '</pre></div>' +
+        '<div class="fz-detail-section"><h3>Response Headers</h3><pre>' + fzEsc(rsH) + '</pre></div>' +
+        '<div class="fz-detail-section"><h3>Response Body</h3><pre>' + fzEsc(rsB) + '</pre></div>';
+    }
+
+    function fzHideDetail() {
+      fzCurrentDetailId = null;
+      document.getElementById('fz-detail').classList.remove('visible');
+      document.getElementById('fz-list').style.display = '';
+      document.getElementById('fz-filters').style.display = '';
+      document.querySelector('#fz-history-tab .fz-search').style.display = '';
+      if (fzSelectMode) document.getElementById('fz-select-bar').classList.add('visible');
+    }
+
+    async function fzClearHistory() {
+      if (!confirm('Clear all request history?')) return;
+      await fzClearDB();
+      fzRefreshCount();
+      fzRenderList();
+    }
+
+    async function fzExportHistory() {
+      var items = await fzGetAll();
+      var examples = await fzGetAllExamples();
+      var blob = new Blob([JSON.stringify({ requests: items, examples: examples }, null, 2)], { type: 'application/json' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = '{{.JSName}}-history-' + new Date().toISOString().slice(0, 10) + '.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    var fzPendingSaveIds = [];
+
+    function fzSaveCurrentAsExample() {
+      if (!fzCurrentDetailId) return;
+      fzPendingSaveIds = [fzCurrentDetailId];
+      fzOpenModal();
+    }
+
+    function fzQuickSaveExample(id) {
+      fzPendingSaveIds = [id];
+      fzOpenModal();
+    }
+
+    function fzSaveSelectedAsExamples() {
+      if (fzSelectedIds.size === 0) return;
+      fzPendingSaveIds = Array.from(fzSelectedIds);
+      fzOpenModal();
+    }
+
+    function fzOpenModal() {
+      document.getElementById('fz-modal-name').value = '';
+      document.getElementById('fz-modal-bg').classList.add('open');
+      setTimeout(function () { document.getElementById('fz-modal-name').focus(); }, 100);
+    }
+
+    function fzCloseModal() {
+      document.getElementById('fz-modal-bg').classList.remove('open');
+      fzPendingSaveIds = [];
+    }
+
+    async function fzConfirmSaveExample() {
+      var name = document.getElementById('fz-modal-name').value.trim();
+      if (!name) { alert('Please enter a name'); return; }
+
+      for (var i = 0; i < fzPendingSaveIds.length; i++) {
+        var item = await fzGetById(fzPendingSaveIds[i]);
+        if (!item) continue;
+
+        var groupKey = (item.method || 'GET') + ' ' + (item.path || item.url || '/');
+        var exName = fzPendingSaveIds.length > 1
+          ? name + ' #' + (i + 1)
+          : name;
+
+        await fzSaveExample({
+          name: exName,
+          groupKey: groupKey,
+          method: item.method,
+          path: item.path,
+          url: item.url,
+          statusCode: item.statusCode,
+          duration: item.duration,
+          timestamp: item.timestamp,
+          savedAt: Date.now(),
+          requestHeaders: item.requestHeaders,
+          requestBody: item.requestBody,
+          responseHeaders: item.responseHeaders,
+          responseBody: item.responseBody,
+        });
+      }
+
+      fzCloseModal();
+      fzPendingSaveIds = [];
+      if (fzCurrentTab === 'history') {
+        fzRenderList();
+      }
+    }
+
+    async function fzRenderExamples() {
+      var list = document.getElementById('fz-examples-list');
+      var search = document.getElementById('fz-ex-search').value.toLowerCase();
+      var items = await fzGetAllExamples();
+
+      if (search) {
+        items = items.filter(function (i) {
+          return (i.name || '').toLowerCase().indexOf(search) !== -1 ||
+            (i.path || '').toLowerCase().indexOf(search) !== -1 ||
+            (i.groupKey || '').toLowerCase().indexOf(search) !== -1;
+        });
+      }
+
+      if (items.length === 0) {
+        list.innerHTML = '<div class="fz-empty"><span class="fz-empty-icon">★</span><span>No saved examples</span><span style="font-size:10px">Bookmark requests from History to save them here</span></div>';
+        return;
+      }
+
+      var groups = {};
+      items.forEach(function (item) {
+        var key = item.groupKey || 'Unknown';
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(item);
+      });
+
+      var groupKeys = Object.keys(groups).sort(function (a, b) {
+        var aMax = Math.max.apply(null, groups[a].map(function (x) { return x.savedAt || 0; }));
+        var bMax = Math.max.apply(null, groups[b].map(function (x) { return x.savedAt || 0; }));
+        return bMax - aMax;
+      });
+
+      var html = '';
+      groupKeys.forEach(function (key) {
+        var items = groups[key];
+        var parts = key.split(' ');
+        var method = parts[0] || '?';
+        var path = parts.slice(1).join(' ') || '?';
+
+        html += '<div class="fz-example-group">' +
+          '<div class="fz-example-group-header" onclick="this.querySelector(\'.fz-eg-arrow\').classList.toggle(\'open\'); this.nextElementSibling.classList.toggle(\'open\')">' +
+          '<span class="fz-eg-arrow">▸</span>' +
+          '<span class="fz-method ' + method.toLowerCase() + '">' + method + '</span>' +
+          '<span class="fz-eg-path">' + fzEsc(path) + '</span>' +
+          '<span class="fz-eg-count">' + items.length + '</span>' +
+          '</div>' +
+          '<div class="fz-example-group-items">';
+
+        items.sort(function (a, b) { return (b.savedAt || 0) - (a.savedAt || 0); });
+        items.forEach(function (item) {
+          html += '<div class="fz-example-item" onclick="fzShowExDetail(' + item.id + ')">' +
+            '<span class="fz-status-code ' + fzStatusClass(item.statusCode) + '">' + (item.statusCode || '—') + '</span>' +
+            '<span class="fz-ex-name">' + fzEsc(item.name) + '</span>' +
+            '<span class="fz-ex-time">' + fzTimeAgo(item.savedAt || item.timestamp) + '</span>' +
+            '<button class="fz-ex-del" onclick="event.stopPropagation(); fzDeleteExampleAndRefresh(' + item.id + ')" title="Delete">✕</button>' +
+            '</div>';
+        });
+
+        html += '</div></div>';
+      });
+
+      list.innerHTML = html;
+    }
+
+    async function fzDeleteExampleAndRefresh(id) {
+      await fzDeleteExample(id);
+      fzRenderExamples();
+    }
+
+    async function fzShowExDetail(id) {
+      var item = await fzGetExampleById(id);
+      if (!item) return;
+
+      document.getElementById('fz-examples-list').style.display = 'none';
+      document.querySelector('#fz-examples-tab .fz-search').style.display = 'none';
+
+      var dv = document.getElementById('fz-ex-detail');
+      dv.classList.add('visible');
+
+      var rqH = item.requestHeaders ? fzPrettyJSON(JSON.stringify(item.requestHeaders)) : '(none)';
+      var rsH = item.responseHeaders ? fzPrettyJSON(JSON.stringify(item.responseHeaders)) : '(none)';
+      var rqB = fzPrettyJSON(fzTruncate(item.requestBody));
+      var rsB = fzPrettyJSON(fzTruncate(item.responseBody));
+
+      document.getElementById('fz-ex-detail-content').innerHTML =
+        '<div class="fz-detail-section">' +
+        '<h3>' + fzEsc(item.name) + '</h3>' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">' +
+        '<span class="fz-method ' + (item.method || 'get').toLowerCase() + '">' + (item.method || '?') + '</span>' +
+        '<span style="font-family:Courier New,monospace;font-size:11px;color:var(--scalar-color-1,#c5c8d4);word-break:break-all;">' + fzEsc(item.url || item.path || '?') + '</span>' +
+        '</div>' +
+        '<div style="display:flex;gap:12px;font-size:10px;font-family:Courier New,monospace;">' +
+        '<span class="fz-status-code ' + fzStatusClass(item.statusCode) + '">Status: ' + (item.statusCode || '—') + '</span>' +
+        (item.duration ? '<span style="color:#6b6f85">Duration: ' + item.duration + 'ms</span>' : '') +
+        '<span style="color:#4a4e63">' + new Date(item.timestamp).toLocaleString() + '</span>' +
+        '</div>' +
+        '</div>' +
+        '<div class="fz-detail-section"><h3>Request Headers</h3><pre>' + fzEsc(rqH) + '</pre></div>' +
+        '<div class="fz-detail-section"><h3>Request Body</h3><pre>' + fzEsc(rqB) + '</pre></div>' +
+        '<div class="fz-detail-section"><h3>Response Headers</h3><pre>' + fzEsc(rsH) + '</pre></div>' +
+        '<div class="fz-detail-section"><h3>Response Body</h3><pre>' + fzEsc(rsB) + '</pre></div>';
+    }
+
+    function fzHideExDetail() {
+      document.getElementById('fz-ex-detail').classList.remove('visible');
+      document.getElementById('fz-examples-list').style.display = '';
+      document.querySelector('#fz-examples-tab .fz-search').style.display = '';
+    }
+
+    var fzOriginalFetch = window.fetch.bind(window);
+
+    function fzExtractPath(url) {
+      try { var u = new URL(url); return u.pathname + u.search; }
+      catch (e) { return url; }
+    }
+
+    function fzHeadersToObj(headers) {
+      var obj = {};
+      if (!headers) return obj;
+      if (typeof headers.forEach === 'function') {
+        headers.forEach(function (v, k) { obj[k] = v; });
+      } else if (headers instanceof Headers) {
+        headers.forEach(function (v, k) { obj[k] = v; });
+      } else if (typeof headers.entries === 'function') {
+        var it = headers.entries();
+        var entry;
+        while (!(entry = it.next()).done) {
+          obj[entry.value[0]] = entry.value[1];
+        }
+      } else if (typeof headers === 'object') {
+        if (Array.isArray(headers)) {
+          headers.forEach(function (pair) { obj[pair[0]] = pair[1]; });
+        } else {
+          Object.keys(headers).forEach(function (k) { obj[k] = headers[k]; });
+        }
+      }
+      return obj;
+    }
+
+    function fzShouldCapture(url) {
+      if (!url) return false;
+      var s = String(url);
+
+      if (s.indexOf('cdn.jsdelivr.net') !== -1) return false;
+      if (s.indexOf('fonts.scalar.com') !== -1) return false;
+      if (s.indexOf('fonts.googleapis.com') !== -1) return false;
+      if (s.indexOf('registry.scalar.com') !== -1) return false;
+      if (s.indexOf('.yaml') !== -1 || s.indexOf('.json') !== -1) return false;
+
+      if (s.indexOf('proxy.scalar.com') !== -1) return true;
+
+      // Hosts injected from mtnuu config. A request is logged if it
+      // targets any of the OpenAPI "servers" the consumer declared.
+      var hosts = window.__MTNUU_SERVER_HOSTS__ || [];
+      for (var i = 0; i < hosts.length; i++) {
+        if (hosts[i] && s.indexOf(hosts[i]) !== -1) return true;
+      }
+      return false;
+    }
+
+    async function fzReadBody(input, init) {
+      if (init && init.body !== undefined && init.body !== null) {
+        if (typeof init.body === 'string') return init.body;
+        if (init.body instanceof FormData) {
+          var parts = [];
+          init.body.forEach(function (v, k) { parts.push(k + '=' + v); });
+          return parts.join('&');
+        }
+        if (init.body instanceof URLSearchParams) return init.body.toString();
+        if (init.body instanceof Blob) {
+          try { return await init.body.text(); } catch (e) { return '(blob - unreadable)'; }
+        }
+        if (init.body instanceof ArrayBuffer || ArrayBuffer.isView(init.body)) {
+          try { return new TextDecoder().decode(init.body); } catch (e) { return '(binary)'; }
+        }
+        if (typeof init.body === 'object') {
+          try { return JSON.stringify(init.body); } catch (e) { return '(object)'; }
+        }
+        try { return String(init.body); } catch (e) { return '(unreadable)'; }
+      }
+
+      if (input instanceof Request) {
+        try {
+          var cloned = input.clone();
+          var text = await cloned.text();
+          if (text) return text;
+        } catch (e) { }
+      }
+
+      return null;
+    }
+
+    window.fetch = async function (input, init) {
+      var url = typeof input === 'string' ? input : (input instanceof Request ? input.url : String(input));
+
+      if (!fzShouldCapture(url)) {
+        return fzOriginalFetch(input, init);
+      }
+
+      var method = 'GET';
+      if (init && init.method) method = init.method.toUpperCase();
+      else if (input instanceof Request) method = input.method.toUpperCase();
+
+      var startTime = performance.now();
+
+      var requestBody = await fzReadBody(input, init);
+
+      var requestHeaders = {};
+      if (init && init.headers) {
+        requestHeaders = fzHeadersToObj(init.headers);
+      } else if (input instanceof Request) {
+        requestHeaders = fzHeadersToObj(input.headers);
+      }
+
+      try {
+        var response = await fzOriginalFetch(input, init);
+        var duration = Math.round(performance.now() - startTime);
+        var statusCode = response.status;
+        var responseHeaders = fzHeadersToObj(response.headers);
+
+        var cloned = response.clone();
+        var responseBody = '';
+        try { responseBody = await cloned.text(); }
+        catch (e) { responseBody = '(unreadable)'; }
+
+        fzSaveRequest({
+          url: url,
+          path: fzExtractPath(url),
+          method: method,
+          statusCode: statusCode,
+          duration: duration,
+          timestamp: Date.now(),
+          requestHeaders: requestHeaders,
+          requestBody: requestBody,
+          responseHeaders: responseHeaders,
+          responseBody: responseBody.slice(0, 50000),
+        }).then(function () { fzRefreshCount(); }).catch(console.error);
+
+        return response;
+      } catch (err) {
+        var duration2 = Math.round(performance.now() - startTime);
+        fzSaveRequest({
+          url: url,
+          path: fzExtractPath(url),
+          method: method,
+          statusCode: 0,
+          duration: duration2,
+          timestamp: Date.now(),
+          requestHeaders: requestHeaders,
+          requestBody: requestBody,
+          responseHeaders: {},
+          responseBody: 'Network Error: ' + err.message,
+        }).then(function () { fzRefreshCount(); }).catch(console.error);
+        throw err;
+      }
+    };
+
+    (function () {
+      var XHR = XMLHttpRequest.prototype;
+      var origOpen = XHR.open;
+      var origSend = XHR.send;
+      var origSetHeader = XHR.setRequestHeader;
+
+      XHR.open = function (method, url) {
+        this._fzMethod = method;
+        this._fzUrl = url;
+        this._fzHeaders = {};
+        return origOpen.apply(this, arguments);
+      };
+
+      XHR.setRequestHeader = function (key, value) {
+        if (this._fzHeaders) this._fzHeaders[key] = value;
+        return origSetHeader.apply(this, arguments);
+      };
+
+      XHR.send = function (body) {
+        var self = this;
+        if (fzShouldCapture(self._fzUrl)) {
+          var startTime = performance.now();
+          var reqBody = body;
+          if (reqBody && typeof reqBody !== 'string') {
+            try { reqBody = JSON.stringify(reqBody); } catch (e) { reqBody = String(reqBody); }
+          }
+
+          self.addEventListener('loadend', function () {
+            var duration = Math.round(performance.now() - startTime);
+            var resHeaders = {};
+            try {
+              var raw = self.getAllResponseHeaders().trim().split(/\r?\n/);
+              raw.forEach(function (line) {
+                var idx = line.indexOf(':');
+                if (idx > 0) resHeaders[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
+              });
+            } catch (e) { }
+
+            fzSaveRequest({
+              url: self._fzUrl,
+              path: fzExtractPath(self._fzUrl),
+              method: (self._fzMethod || 'GET').toUpperCase(),
+              statusCode: self.status,
+              duration: duration,
+              timestamp: Date.now(),
+              requestHeaders: self._fzHeaders || {},
+              requestBody: reqBody || null,
+              responseHeaders: resHeaders,
+              responseBody: (self.responseText || '').slice(0, 50000),
+            }).then(function () { fzRefreshCount(); }).catch(console.error);
+          });
+        }
+
+        return origSend.apply(this, arguments);
+      };
+    })();
+
+    var configuration = {
+      url: '{{.SpecURL}}',
+      theme: '{{.Theme}}',
+      layout: 'modern',
+      darkMode: {{if .DarkMode}}true{{else}}false{{end}},
+      hideDarkModeToggle: true,
+      withDefaultFonts: true,
+      showSidebar: true,
+      hideSearch: false,
+      defaultOpenAllTags: false,
+      operationTitleSource: 'summary',
+      showOperationId: false,
+      hideModels: false,
+      expandAllModelSections: false,
+      orderSchemaPropertiesBy: 'alpha',
+      orderRequiredPropertiesFirst: true,
+      hideClientButton: true,
+      hideTestRequestButton: false,
+      expandAllResponses: false,
+      documentDownloadType: 'both',
+      showDeveloperTools: 'localhost',
+      persistAuth: fzPersistCheck.checked,
+      telemetry: true,
+      isLoading: false,
+      metaData: {
+        title: '{{.Title}}',
+        description: 'API reference for {{.DocName}}',
+        ogTitle: '{{.Title}}',
+        ogDescription: 'Explore and test {{.DocName}} APIs',
+      },
+      customCss: '\
+        .scalar-app {\
+          font-family: "Poppins", sans-serif;\
+        }\
+        .scalar-card-loading,\
+        .loading-skeleton,\
+        [class*="loading"],\
+        [class*="skeleton"],\
+        [data-loading="true"],\
+        .scalar-api-client__loading,\
+        .references-classic__loading,\
+        .references-modern__loading {\
+          display: none !important;\
+          opacity: 0 !important;\
+          visibility: hidden !important;\
+          height: 0 !important;\
+          overflow: hidden !important;\
+        }\
+      ',
+      onLoaded: function () {
+        console.log('API Reference loaded successfully');
+        setTimeout(function () {
+          var loaders = document.querySelectorAll('[class*="loading"], [class*="skeleton"]');
+          loaders.forEach(function (el) { el.remove(); });
+        }, 100);
+      },
+      onServerChange: function (server) {
+        console.log('Server changed to:', server);
+        fzSaveState({ selectedServer: server });
+      },
+    };
+
+    Scalar.createApiReference(
+      document.getElementById('api-reference'),
+      configuration
+    );
+  </script>
+</body>
+
+</html>
